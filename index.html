@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Risky Fable — a tabletop war for the world</title>
+  <meta name="description" content="A 3D tabletop strategy game of world conquest. Play solo against AI generals or pass the table between up to six players." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23b3262f'/%3E%3Cg fill='%23fff7e2'%3E%3Ccircle cx='20' cy='20' r='6'/%3E%3Ccircle cx='44' cy='20' r='6'/%3E%3Ccircle cx='32' cy='32' r='6'/%3E%3Ccircle cx='20' cy='44' r='6'/%3E%3Ccircle cx='44' cy='44' r='6'/%3E%3C/g%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700&family=Marcellus&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="vignette"></div>
+  <div id="fx-layer"></div>
+
+  <div id="hud" hidden>
+    <aside id="players" aria-label="Players"></aside>
+    <header id="phase"></header>
+    <nav id="tools"></nav>
+    <aside id="side">
+      <section id="continents"></section>
+      <section id="log" aria-live="polite"></section>
+    </aside>
+    <div id="tray" hidden>
+      <canvas id="dice"></canvas>
+      <div id="roll-result"></div>
+    </div>
+    <footer id="action"></footer>
+  </div>
+
+  <div id="tooltip" hidden></div>
+  <div id="banner" hidden></div>
+  <div id="menu" hidden></div>
+  <div id="modal-root"></div>
+  <div id="loading"><div class="loading-mark">Risky Fable</div><p>Unrolling the map…</p></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
