@@ -79,9 +79,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
 #action .msg strong { font-weight: 700; }
 #action .msg .sub { display: block; color: var(--muted); font-size: 14px; }
 #action .controls { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
-#action .msg { min-width: 0; }
+#action .msg { min-width: 0; flex: 1 1 auto; }
+#action .controls { flex: 0 0 auto; }
 .seg { display: inline-flex; border: 1px solid var(--brass-dim); border-radius: 5px; overflow: hidden; }
-.seg button { border: 0; background: transparent; padding: 8px 13px; font-weight: 700; color: var(--muted); border-right: 1px solid var(--brass-dim); }
+.seg button { white-space: nowrap; border: 0; background: transparent; padding: 8px 13px; font-weight: 700; color: var(--muted); border-right: 1px solid var(--brass-dim); }
 .seg button:last-child { border-right: 0; }
 .seg button.on { background: var(--brass); color: #1c1408; }
 .seg button:disabled { opacity: 0.3; cursor: default; }
@@ -91,7 +92,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .thinking::after { content: ''; display: inline-block; width: 1.2em; text-align: left; animation: dots 1.2s steps(4) infinite; }
 @keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
 
-#tray { left: 50%; bottom: 104px; transform: translateX(-50%); width: min(470px, 94vw); height: 204px; padding: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 60%, #1f6a4d, #0f3d2d 78%); border: 1px solid var(--brass-dim); border-radius: 9px; box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6), inset 0 0 0 5px #3b2416, inset 0 0 0 6px rgba(201, 164, 92, 0.5), inset 0 0 40px rgba(0, 0, 0, 0.55); animation: tray-in 0.22s ease-out; }
+#tray { left: 50%; bottom: 118px; transform: translateX(-50%); width: min(470px, 94vw); height: 204px; padding: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 60%, #1f6a4d, #0f3d2d 78%); border: 1px solid var(--brass-dim); border-radius: 9px; box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6), inset 0 0 0 5px #3b2416, inset 0 0 0 6px rgba(201, 164, 92, 0.5), inset 0 0 40px rgba(0, 0, 0, 0.55); animation: tray-in 0.22s ease-out; }
 @keyframes tray-in { from { opacity: 0; transform: translateX(-50%) translateY(14px); } }
 #dice { width: 100%; height: 100%; display: block; }
 #roll-result { position: absolute; left: 0; right: 0; top: 10px; display: flex; justify-content: space-between; padding: 0 18px; font-weight: 700; font-size: 15px; pointer-events: none; text-shadow: 0 1px 3px #000; }
