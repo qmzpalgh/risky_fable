@@ -22,10 +22,10 @@ export function winChance(a, d) {
   return WIN[Math.max(0, a)][Math.max(0, d)];
 }
 
-const LEVELS = {
-  easy: { risk: -0.12, noise: 1.2, greed: 0.7 },
-  normal: { risk: 0, noise: 0.15, greed: 1 },
-  hard: { risk: -0.03, noise: 0.03, greed: 1.25 },
+export const LEVELS = {
+  easy: { risk: 0.06, noise: 1.5, greed: 0.7, quit: 0.12, drive: 0 },
+  normal: { risk: 0, noise: 0.15, greed: 1, quit: 0, drive: 0 },
+  hard: { risk: -0.06, noise: 0.03, greed: 1.3, quit: 0, drive: 1 },
 };
 const lvl = (s, p) => LEVELS[s.players[p].level] || LEVELS.normal;
 const enemyAdj = (s, t, p) => ADJ[t].filter((a) => s.owner[a] !== p);
@@ -112,6 +112,7 @@ export function aiTrade(s) {
 
 export function aiAttack(s) {
   const p = s.turn, L = lvl(s, p);
+  if (L.quit && s.conquered && s.round < 20 && Math.random() < L.quit) return null;
   const plan = continentPlan(s, p);
   const target = plan.filter((c) => !c.owned).sort((a, b) => b.score - a.score)[0];
   const totals = s.players.map((pl, i) => (pl.alive ? armiesOf(s, i) : 0));
@@ -132,11 +133,18 @@ export function aiAttack(s) {
       if (counts[o] === 1) value += 3 + s.players[o].cards.length * 2.5; // elimination
       else if (totals[o] <= a * 0.6) value += 1 + s.players[o].cards.length;
       if (d === 1 && a >= 3) value += 0.8;
+      if (L.drive) {
+        // keep a campaign rolling: favour big stacks and targets that open onto more weak ground
+        const onward = ADJ[to].filter((n) => n !== from && s.owner[n] !== p && s.armies[n] <= 2).length;
+        const duel = s.players.filter((x) => x.alive).length === 2 ? 1 : 0.4; // free-for-alls punish overreach
+        value += (Math.min(2, onward * 0.5) * pw + Math.min(1.5, (a - d) * 0.12)) * duel;
+      }
       // do not strip an important gate bare
       const exposure = threat(s, from, p) - s.armies[to] + 1;
       const penalty = plan[CONT_OF[from]].owned ? Math.max(0, exposure - a * pw) * 0.15 : 0;
       let need_p = 0.56 + L.risk - Math.min(0.14, (value - 2) * 0.02 * L.greed);
       if (s.conquered && value < 3) need_p += 0.1; // already have the card: only good fights
+      need_p -= Math.min(0.4, Math.max(0, s.round - 20) * 0.012); // long wars make everyone bolder (breaks stalemates)
       if (pw < need_p) continue;
       const sc = pw * value * L.greed - penalty + Math.random() * L.noise * 3;
       if (sc > bs) { bs = sc; best = { from, to, dice: Math.min(3, a) }; }
@@ -151,6 +159,11 @@ export function aiOccupy(s) {
   const thFrom = threat(s, from, p), thTo = enemyAdj(s, to, p).reduce((a, n) => a + s.armies[n], 0);
   if (thFrom === 0 && !ADJ[from].some((a) => a !== to && s.owner[a] !== p)) return max;
   if (thTo === 0) return min;
+  if (lvl(s, p).drive) {
+    // march on if the stack can keep conquering from its new position
+    const weakest = Math.min(...enemyAdj(s, to, p).map((n) => s.armies[n]));
+    if (winChance(max - 1, weakest) > (s.players.filter((x) => x.alive).length === 2 ? 0.62 : 0.8) && thFrom <= Math.max(2, max * 0.5)) return max;
+  }
   const share = thTo / (thTo + thFrom + 0.01);
   return Math.max(min, Math.min(max, Math.round((max + 1) * Math.max(share, 0.5))));
 }

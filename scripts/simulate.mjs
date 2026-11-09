@@ -46,7 +46,7 @@ for (let g = 0; g < games; g++) {
     const errs = E.validate(s);
     if (errs.length) throw new Error(`game ${g} step ${steps}: ${errs.join(', ')}`);
   }
-  if (s.phase !== 'over') unfinished++;
+  if (s.phase !== 'over') { unfinished++; console.log('unfinished game', g, 'round', s.round, 'phase', s.phase, 'alive', s.players.filter((p) => p.alive).map((p) => p.level + ':' + E.armiesOf(s, p.id)).join(' ')); }
   else { rounds += s.round; const l = s.players[s.winner].level; wins[l] = (wins[l] || 0) + 1; }
 }
 console.log(`${games} games ok, ${unfinished} unfinished, avg rounds ${(rounds / (games - unfinished)).toFixed(1)}, wins by level`, wins);
