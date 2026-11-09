@@ -169,7 +169,9 @@ kbd { background: rgba(255, 255, 255, 0.1); border: 1px solid var(--brass-dim); 
   .title-block { padding: 26px 20px 0; }
   .title-block p { font-size: 16px; margin-top: 10px; }
   .setup { margin: 12px; }
-  #players { width: auto; right: auto; top: 62px; padding: 5px; }
+  #players { width: auto; right: auto; top: 96px; padding: 5px; }
+  .opt { grid-template-columns: 1fr; gap: 4px; }
+  .prow { grid-template-columns: 30px 1fr 118px 24px; }
   .player { grid-template-columns: 12px auto; padding: 3px 6px; }
   .player .pname { display: none; }
   .pstats { font-size: 13px; gap: 7px; }
@@ -178,7 +180,7 @@ kbd { background: rgba(255, 255, 255, 0.1); border: 1px solid var(--brass-dim); 
   .steps { margin: 0; font-size: 12.5px; gap: 3px; }
   .steps span { padding: 1px 7px; }
   .steps i { width: 5px; }
-  #tools { top: 62px; right: 8px; bottom: auto; }
+  #tools { top: 52px; left: 8px; right: 8px; bottom: auto; justify-content: space-between; padding: 2px; }
   #tools .btn { padding: 5px 8px; font-size: 13px; }
   #action { flex-direction: column; gap: 9px; bottom: 8px; width: calc(100vw - 16px); padding: 10px 12px; text-align: center; }
   #action .controls { justify-content: center; flex-wrap: wrap; }

@@ -28,6 +28,7 @@ class Game {
     this.busy = false; this.running = false;
     this.placeAmount = 1; this.diceN = 3; this.moveN = 1; this.speedIdx = 0;
     this.shown = new Array(N).fill(null);
+    this.autoPlace = new Set();
     this.turnKey = '';
     this.bindInput();
     this.toMenu();
@@ -70,7 +71,8 @@ class Game {
   }
 
   get me() { return E.current(this.s); }
-  get humanTurn() { return this.s && this.s.phase !== 'over' && !this.me.isAI && !this.running; }
+  get auto() { const s = this.s; return this.me.isAI || (s.phase === 'deploy' && this.autoPlace.has(s.turn)); }
+  get humanTurn() { return this.s && this.s.phase !== 'over' && !this.auto && !this.running; }
   get placing() { const s = this.s; return s.phase === 'reinforce' || (s.phase === 'attack' && s.pool > 0); }
 
   // ---------- rendering ----------
@@ -140,7 +142,7 @@ class Game {
       if (to < 0) return ui.setAction({ msg: `<strong>${tn(from)}</strong> — choose a neighbouring enemy`, sub: `${plural(s.armies[from] - 1, 'army')} can attack`, controls: [{ label: 'Cancel', kind: 'ghost', onClick: () => this.cancel() }, done] });
       const max = Math.min(3, s.armies[from] - 1);
       this.diceN = Math.max(1, Math.min(this.diceN, max));
-      const odds = Math.round(AI.winChance(s.armies[from] - 1, s.armies[to]) * 100);
+      const odds = Math.max(1, Math.min(99, Math.round(AI.winChance(s.armies[from] - 1, s.armies[to]) * 100)));
       return ui.setAction({
         msg: `<strong>${tn(from)}</strong> (${s.armies[from]}) attacks <strong>${tn(to)}</strong> (${s.armies[to]})`, sub: `About ${odds}% chance to take it if you fight to the end`,
         controls: [
@@ -262,10 +264,8 @@ class Game {
   autoDeploy() {
     const s = this.s, p = s.turn;
     if (this.busy || s.phase !== 'deploy') return;
-    while (s.phase === 'deploy' && s.reserve[p] > 0) {
-      if (s.turn === p) E.deploy(s, AI.aiPlacement(s, p)); else E.deploy(s, AI.aiPlacement(s));
-    }
-    this.sound.place(); this.refresh(); this.advance();
+    this.autoPlace.add(p); // keep placing for this player whenever their setup turn comes round
+    this.sound.place(); this.advance();
   }
 
   // ---------- battles ----------
@@ -377,7 +377,7 @@ class Game {
     const s = this.s;
     this.running = true;
     try {
-      while (s.phase !== 'over' && this.me.isAI && this.s === s) await this.aiStep();
+      while (s.phase !== 'over' && this.auto && this.s === s) await this.aiStep();
     } catch (err) { console.error(err); }
     this.running = false;
     if (s.phase === 'over') return this.finish();
@@ -416,7 +416,7 @@ class Game {
     if (s.phase === 'deploy') {
       // place in small bursts so setup does not drag
       let k = 0;
-      do { E.deploy(s, AI.aiPlacement(s)); k++; } while (s.phase === 'deploy' && this.me.isAI && k < 12);
+      do { E.deploy(s, AI.aiPlacement(s)); k++; } while (s.phase === 'deploy' && this.auto && k < 12);
       this.sound.place(); this.refresh(); return pause(0.12);
     }
     this.announceTurn();

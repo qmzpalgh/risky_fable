@@ -131,13 +131,16 @@ export class World {
   adaptQuality(ms) {
     if (document.hidden || ms > 1000) return;
     this._q = this._q || { t: 0, n: 0, level: 0 };
-    const q = this._q; q.t += ms; q.n++;
+    const q = this._q;
+    if (this.time < 5) return; // ignore start-up shader compilation
+    q.t += ms; q.n++;
     if (q.t < 2500) return;
     const fps = (q.n * 1000) / q.t; q.t = 0; q.n = 0;
-    if (fps > 26 || q.level >= 3) return;
-    q.level++;
+    q.bad = fps < 24 ? (q.bad || 0) + 1 : 0;
+    if (q.bad < 2 || q.level >= 3) return; // two slow windows in a row before stepping down
+    q.bad = 0; q.level++;
     if (q.level === 1) this.renderer.setPixelRatio(1);
-    else if (q.level === 2) { this.key.shadow.mapSize.set(1024, 1024); this.key.shadow.map?.dispose(); this.key.shadow.map = null; this.renderer.setPixelRatio(0.8); }
+    else if (q.level === 2) { this.key.shadow.mapSize.set(2048, 2048); this.key.shadow.map?.dispose(); this.key.shadow.map = null; this.key.shadow.normalBias = 0.12; this.renderer.setPixelRatio(0.8); }
     else { this.renderer.shadowMap.enabled = false; this.key.castShadow = false; this.renderer.setPixelRatio(0.6); this.scene.traverse((o) => o.material && [].concat(o.material).forEach((m) => (m.needsUpdate = true))); }
     this.resize();
   }
@@ -389,7 +392,8 @@ export class World {
   homeView() {
     // back off until the whole board fits the viewport
     const cam = this.camera, vf = (cam.fov * Math.PI) / 360, hf = Math.atan(Math.tan(vf) * cam.aspect);
-    const dist = Math.max((BOARD_W / 2 + 4) / Math.tan(hf), (BOARD_D / 2 + 16) / Math.tan(vf) * 0.86);
+    let dist = Math.max((BOARD_W / 2 + 4) / Math.tan(hf), (BOARD_D / 2 + 16) / Math.tan(vf) * 0.86);
+    if (cam.aspect < 0.9) dist *= 0.6; // portrait: start closer and let the player pan
     const target = new THREE.Vector3(0, 0, 5);
     return { target, pos: target.clone().add(new THREE.Vector3(0, 0.8, 0.6).normalize().multiplyScalar(dist)) };
   }
