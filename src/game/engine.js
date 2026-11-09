@@ -210,7 +210,7 @@ export function attack(s, from, to, dice) {
   for (let i = 0; i < Math.min(dice, dDice); i++) (a[i] > d[i] ? dLoss++ : aLoss++);
   const att = current(s), defId = s.owner[to], def = s.players[defId];
   s.armies[from] -= aLoss; s.armies[to] -= dLoss;
-  att.stats.casualties += aLoss; def.stats.casualties += dLoss; att.stats.killed += dLoss;
+  att.stats.casualties += aLoss; def.stats.casualties += dLoss; att.stats.killed += dLoss; def.stats.killed += aLoss;
   const res = { from, to, attacker: s.turn, defender: defId, a, d, aLoss, dLoss, conquered: false, eliminated: -1, cardsTaken: 0 };
   if (s.armies[to] === 0) {
     res.conquered = true;

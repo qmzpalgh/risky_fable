@@ -247,6 +247,7 @@ class Game {
     const s = this.s;
     if (!s || s.phase === 'over' || this.busy) return;
     if (!this.humanTurn) return;
+    if (s.pending) return; // finish moving into the conquered territory first
     const must = E.mustTrade(s);
     this.ui.showCards(s, {
       must, canTrade: E.canTrade(s),
