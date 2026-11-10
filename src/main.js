@@ -139,7 +139,7 @@ class Game {
       }
       const done = { label: 'Done attacking', onClick: () => this.endAttack() };
       if (from < 0) return ui.setAction({ msg: 'Choose a territory to attack from', sub: s.conquered ? 'You have earned a card this turn' : 'Conquer a territory this turn to earn a card', controls: [...(me.cards.length ? [cardsBtn] : []), { ...done, kind: 'primary', primary: true }] });
-      if (to < 0) return ui.setAction({ msg: `<strong>${tn(from)}</strong> — choose a neighbouring enemy`, sub: `${plural(s.armies[from] - 1, 'army')} can attack`, controls: [{ label: 'Cancel', kind: 'ghost', onClick: () => this.cancel() }, done] });
+      if (to < 0) return ui.setAction({ msg: `<strong>${tn(from)}</strong> — choose a neighbouring enemy`, sub: `${plural(s.armies[from] - 1, 'army')} can attack — double-click an enemy to blitz and move all in`, controls: [{ label: 'Cancel', kind: 'ghost', onClick: () => this.cancel() }, done] });
       const max = Math.min(3, s.armies[from] - 1);
       this.diceN = Math.max(1, Math.min(this.diceN, max));
       const odds = Math.max(1, Math.min(99, Math.round(AI.winChance(s.armies[from] - 1, s.armies[to]) * 100)));
@@ -171,6 +171,11 @@ class Game {
   bindInput() {
     const W = this.world;
     W.onClick = (t, e) => this.click(t, e);
+    W.onDoubleClick = (t) => {
+      const s = this.s;
+      if (!s || !this.humanTurn || this.busy || this.ui.modalOpen || E.attackBlocked(s)) return;
+      if (t === this.sel.to && s.owner[t] !== s.turn) return this.humanRoll(true, true);
+    };
     W.onCancel = () => this.cancel();
     W.onHover = (t, e) => {
       W.canvas.style.cursor = t >= 0 ? 'pointer' : 'grab';
@@ -312,7 +317,7 @@ class Game {
     this.armies.sync(this.s);
   }
 
-  async humanRoll(blitz) {
+  async humanRoll(blitz, moveAll = false) {
     const s = this.s, { from, to } = this.sel;
     if (this.busy || from < 0 || to < 0 || E.attackBlocked(s)) return;
     this.busy = true; this.world.clearModes();
@@ -326,7 +331,7 @@ class Game {
     if (s.phase === 'over') return this.finish();
     if (res.conquered) {
       this.moveN = s.pending.max;
-      if (s.pending.min >= s.pending.max) return this.doOccupy(s.pending.max);
+      if (moveAll || s.pending.min >= s.pending.max) return this.doOccupy(s.pending.max);
     } else if (s.armies[from] < 2) { this.sel = { from: -1, to: -1 }; }
     this.refresh();
   }

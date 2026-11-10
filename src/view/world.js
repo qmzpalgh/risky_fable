@@ -445,6 +445,7 @@ export class World {
       return hit ? hit.object.userData.t : -1;
     };
     let down = null;
+    const clicks = [];
     this.canvas.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, b: e.button, t: e.timeStamp }; });
     this.canvas.addEventListener('pointermove', (e) => {
       if (e.pointerType === 'touch') return;
@@ -458,9 +459,23 @@ export class World {
       const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y);
       const quick = e.timeStamp - down.t < 600;
       const b = down.b; down = null;
-      if (moved > 6 || !quick) return;
-      if (b === 2) return this.onCancel?.();
-      if (b === 0) this.onClick?.(pick(e), e);
+      if (moved > 6 || !quick || b !== 0) {
+        clicks.length = 0;
+        if (b === 2 && moved <= 6 && quick) this.onCancel?.();
+        return;
+      }
+      const t = pick(e);
+      clicks.push(t);
+      if (clicks.length > 2) clicks.shift();
+      this.onClick?.(t, e);
+    });
+    this.canvas.addEventListener('pointercancel', () => { down = null; clicks.length = 0; });
+    this.canvas.addEventListener('dblclick', (e) => {
+      const t = pick(e);
+      // Native double-click timing, with both taps passing the drag filter on the same territory.
+      const valid = e.button === 0 && t >= 0 && clicks.length === 2 && clicks.every((c) => c === t);
+      clicks.length = 0;
+      if (valid) this.onDoubleClick?.(t, e);
     });
     this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
   }
