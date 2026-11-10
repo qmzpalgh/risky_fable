@@ -237,8 +237,11 @@ export class World {
       const inlay = new THREE.Mesh(new THREE.BoxGeometry(w - (w > d ? 1.6 : 2.4), 0.12, d - (w > d ? 2.4 : 1.6)), brass);
       inlay.position.set(x, fh - 2.2 + 0.9 + 0.02, z); scene.add(inlay);
     }
-    const slab = new THREE.Mesh(new THREE.BoxGeometry(BOARD_W, 2.2, BOARD_D), frameMat);
-    slab.position.y = -1.105; scene.add(slab);
+    // Keep the backing below the chart: a nearly coplanar top loses depth
+    // precision at maximum zoom-out and bleeds through the ocean.
+    const slabHeight = 2;
+    const slab = new THREE.Mesh(new THREE.BoxGeometry(BOARD_W, slabHeight, BOARD_D), frameMat);
+    slab.position.y = -2.2 + slabHeight / 2; scene.add(slab);
   }
 
   // ---------- land ----------
