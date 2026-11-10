@@ -98,8 +98,12 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .cont .holder .pawn { width: 9px; height: 12px; }
 .cont b { display: grid; place-items: center; min-width: 30px; height: 22px; border-radius: 11px; background: var(--stock-deep); font-size: 13px; font-weight: 800; }
 .cont.held b { background: var(--teal); color: var(--paper); }
-#log { padding: 6px 12px 8px; overflow-y: auto; font-size: 14px; line-height: 24px; min-height: 60px; flex: 1 1 auto; scrollbar-width: thin; scrollbar-color: var(--ink-soft) transparent; background: repeating-linear-gradient(var(--stock) 0 23px, rgba(23, 138, 132, 0.28) 23px 24px) local; background-position: 0 6px; }
+#log { padding: 6px 12px 8px; overflow-y: auto; font-size: 14px; line-height: 24px; min-height: 60px; flex: 1 1 auto; scrollbar-width: none; background: repeating-linear-gradient(var(--stock) 0 23px, rgba(23, 138, 132, 0.28) 23px 24px) local; background-position: 0 6px; }
+#log::-webkit-scrollbar { display: none; }
+/* older lines fade out under the top edge instead of being cut in half */
+#log::before { content: ''; display: block; position: sticky; top: -6px; height: 36px; margin: -6px -12px -30px; background: linear-gradient(var(--stock) 40%, transparent); pointer-events: none; z-index: 1; }
 #log p { margin: 0; }
+#log .who-tag { white-space: normal; }
 #log p.turn { font-weight: 800; }
 #log em { font-style: normal; font-weight: 700; }
 .who-tag { font-style: normal; font-weight: 700; white-space: nowrap; }
@@ -177,8 +181,22 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .prow .swatch:hover { transform: rotate(-12deg) scale(1.08); }
 .prow .swatch:active { transform: translateY(3px); box-shadow: none; }
 .prow .swatch .pawn { width: 14px; height: 18px; }
-.prow input, .prow select, .opt select { width: 100%; background: var(--paper); border: 2px solid var(--ink); color: var(--ink); border-radius: 10px; padding: 7px 9px; font: inherit; font-weight: 600; }
-.prow input:focus-visible, .prow select:focus-visible, .opt select:focus-visible { outline-offset: 1px; }
+.prow input, .pick-btn { width: 100%; background: var(--paper); border: 2px solid var(--ink); color: var(--ink); border-radius: 10px; padding: 7px 9px; font: inherit; font-weight: 600; }
+.prow input:focus-visible, .pick-btn:focus-visible { outline-offset: 1px; }
+.pick { min-width: 0; }
+.pick-btn { display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left; }
+.pick-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pick-btn svg { flex: none; width: 12px; height: 8px; transition: transform 0.15s; }
+.pick-btn[aria-expanded='true'] { background: var(--mustard); }
+.pick-btn[aria-expanded='true'] svg { transform: rotate(180deg); }
+.pick-menu { position: fixed; z-index: 45; margin: 0; padding: 5px; list-style: none; background: var(--paper); border: 2.5px solid var(--ink); border-radius: 13px; box-shadow: 0 4px 0 var(--ink), 0 14px 22px rgba(12, 14, 30, 0.35); font-weight: 600; transform-origin: 50% 0; animation: unfold 0.16s cubic-bezier(0.3, 1.5, 0.5, 1); }
+.pick-menu.up { transform-origin: 50% 100%; }
+@keyframes unfold { from { opacity: 0; transform: scaleY(0.7); } }
+.pick-menu li { display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 8px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+.pick-menu li::before { content: ''; flex: none; width: 9px; height: 9px; border-radius: 50%; border: 2px solid var(--ink); }
+.pick-menu li[aria-selected='true'] { font-weight: 800; }
+.pick-menu li[aria-selected='true']::before { background: var(--ink); }
+.pick-menu li.at { background: var(--mustard); }
 .prow .rm { border: 0; background: none; color: var(--ink-soft); font-size: 22px; font-weight: 700; line-height: 1; padding: 2px; border-radius: 6px; }
 .prow .rm:hover { color: var(--tomato); }
 #add-player { align-self: flex-start; }
@@ -258,7 +276,7 @@ kbd { background: var(--paper); border: 2px solid var(--ink); border-bottom-widt
   .setup .go .btn { flex: 1 1 auto; }
   .opt { grid-template-columns: 1fr; gap: 4px; }
   .prow { grid-template-columns: 34px 1fr 136px 22px; gap: 6px; }
-  .prow input, .prow select { padding: 7px 6px; }
+  .prow input, .prow .pick-btn { padding: 7px 6px; }
   #phase { min-width: 0; width: calc(100vw - 16px); top: 8px; padding: 6px 9px 9px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-radius: 13px; }
   #phase .who { font-size: 15px; min-width: 0; justify-content: flex-start; gap: 7px; }
   #phase .round { display: none; }

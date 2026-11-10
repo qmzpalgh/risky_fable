@@ -39,9 +39,53 @@ const CARD_ART = [
   '<svg viewBox="0 0 48 48" fill="currentColor"><path d="m24 3 6 14 15 1.500-11.500 10L37 44 24 36l-13 8 3.500-15.500L3 18.500 18 17z"/></svg>',
 ];
 
+// A dropdown drawn in the game's own style, in place of the browser's native one.
+function picker({ options, value, label, onChange }) {
+  const el = h(`<div class="pick"><button type="button" class="pick-btn" aria-haspopup="listbox" aria-expanded="false"><span></span><svg viewBox="0 0 12 8" aria-hidden="true"><path d="m1.500 1.500 4.500 4.500 4.500-4.500" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>`);
+  const btn = el.firstElementChild, n = options.length;
+  let menu = null, at = 0;
+  const show = () => { const o = options.find((x) => x.value === value); btn.firstElementChild.textContent = o.label; btn.setAttribute('aria-label', `${label}: ${o.label}`); };
+  const close = (refocus) => {
+    if (!menu) return;
+    menu.remove(); menu = null; btn.setAttribute('aria-expanded', 'false');
+    document.removeEventListener('pointerdown', outside, true); window.removeEventListener('resize', close);
+    if (refocus === true) btn.focus();
+  };
+  const outside = (e) => { if (!menu.contains(e.target) && !el.contains(e.target)) close(); };
+  const mark = (i) => { at = (i + n) % n; [...menu.children].forEach((li, k) => li.classList.toggle('at', k === at)); };
+  const choose = (i) => { const v = options[i].value; close(true); if (v !== value) { value = v; show(); onChange(v); } };
+  const open = () => {
+    menu = h(`<ul class="pick-menu" role="listbox" aria-label="${esc(label)}">${options.map((o) => `<li role="option" aria-selected="${o.value === value}">${esc(o.label)}</li>`).join('')}</ul>`);
+    document.body.appendChild(menu);
+    [...menu.children].forEach((li, i) => { li.onclick = () => choose(i); li.onpointermove = () => mark(i); });
+    const r = btn.getBoundingClientRect(), mh = menu.offsetHeight, below = r.bottom + 6 + mh < window.innerHeight - 8;
+    menu.style.minWidth = r.width + 'px';
+    menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - menu.offsetWidth - 8)) + 'px';
+    menu.style.top = (below ? r.bottom + 6 : r.top - mh - 8) + 'px';
+    menu.classList.toggle('up', !below);
+    mark(options.findIndex((o) => o.value === value));
+    btn.setAttribute('aria-expanded', 'true');
+    document.addEventListener('pointerdown', outside, true); window.addEventListener('resize', close);
+  };
+  btn.onclick = () => (menu ? close() : open());
+  btn.onkeydown = (e) => {
+    if (!menu) { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); open(); } return; }
+    if (e.key === 'ArrowDown') { e.preventDefault(); mark(at + 1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); mark(at - 1); }
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(at); }
+    else if (e.key === 'Escape') { e.stopPropagation(); close(true); }
+    else if (e.key === 'Tab') close();
+  };
+  show();
+  return el;
+}
+const TYPES = [{ value: 'human', label: 'Human' }, { value: 'easy', label: 'Cautious AI' }, { value: 'normal', label: 'Seasoned AI' }, { value: 'hard', label: 'Ruthless AI' }];
+
 export class UI {
   constructor() {
     this.logEl = $('log');
+    // keep the newest line in view when the panel above grows or the window resizes
+    if (window.ResizeObserver) new ResizeObserver(() => (this.logEl.scrollTop = this.logEl.scrollHeight)).observe(this.logEl);
     for (const id of ['players', 'phase', 'continents', 'log', 'action', 'tooltip']) $(id).classList.add('plate');
     document.querySelector('#loading')?.classList.add('ready');
   }
@@ -64,17 +108,8 @@ export class UI {
         <div id="prows"></div>
         <button class="btn" id="add-player">Add a player</button>
         <h3>House rules</h3>
-        <label class="opt"><span>Opening<small>How territories are handed out</small></span>
-          <select id="opt-setup">
-            <option value="quick">Quick start</option>
-            <option value="deal">Dealt, place your armies</option>
-            <option value="draft">Draft territories in turn</option>
-          </select></label>
-        <label class="opt"><span>Fortifying<small>The one troop move that ends a turn</small></span>
-          <select id="opt-fortify">
-            <option value="adjacent">To a neighbour</option>
-            <option value="connected">Anywhere along your lines</option>
-          </select></label>
+        <div class="opt" id="opt-setup"><span>Opening<small>How territories are handed out</small></span></div>
+        <div class="opt" id="opt-fortify"><span>Fortifying<small>The one troop move that ends a turn</small></span></div>
         <div class="spacer"></div>
         <div class="go">
           ${hasSave ? '<button class="btn" id="continue">Resume saved game</button>' : ''}
@@ -89,17 +124,14 @@ export class UI {
         const row = h(`<div class="prow">
           <button class="swatch" title="Change colour" aria-label="Colour: ${COLORS[r.color].name}" >${pawn(COLORS[r.color].hex)}</button>
           <input value="${esc(r.name)}" maxlength="18" aria-label="Player name" />
-          <select aria-label="Player type">
-            <option value="human">Human</option><option value="easy">Cautious AI</option><option value="normal">Seasoned AI</option><option value="hard">Ruthless AI</option>
-          </select>
           <button class="rm" title="Remove player" aria-label="Remove player" ${rows.length <= 2 ? 'disabled style="visibility:hidden"' : ''}>×</button></div>`);
-        const [sw, name, type, rm] = row.children;
-        type.value = r.type;
+        const [sw, name, rm] = row.children;
+        name.after(picker({ options: TYPES, value: r.type, label: 'Player type', onChange: (v) => setType(v) }));
         sw.onclick = () => { let c = r.color; do { c = (c + 1) % COLORS.length; } while (rows.some((o) => o !== r && o.color === c)); r.color = c; render(); };
         name.oninput = () => { r.name = name.value; r.custom = true; };
-        type.onchange = () => {
-          const was = r.type; r.type = type.value;
-          if (!r.custom) { r.name = r.type === 'human' ? (rows.filter((o) => o.type === 'human').length > 1 ? `Player ${i + 1}` : 'You') : AI_NAMES[i]; if (was !== r.type) render(); }
+        const setType = (v) => {
+          r.type = v;
+          if (!r.custom) { r.name = v === 'human' ? (rows.filter((o) => o.type === 'human').length > 1 ? `Player ${i + 1}` : 'You') : AI_NAMES[i]; name.value = r.name; }
         };
         rm.onclick = () => { rows.splice(i, 1); render(); };
         list.appendChild(row);
@@ -111,8 +143,8 @@ export class UI {
       const color = COLORS.findIndex((_, c) => !rows.some((r) => r.color === c));
       rows.push({ name: AI_NAMES[rows.length], type: 'normal', color }); render();
     };
-    root.querySelector('#opt-setup').onchange = (e) => (opts.setup = e.target.value);
-    root.querySelector('#opt-fortify').onchange = (e) => (opts.fortify = e.target.value);
+    root.querySelector('#opt-setup').appendChild(picker({ label: 'Opening', value: opts.setup, onChange: (v) => (opts.setup = v), options: [{ value: 'quick', label: 'Quick start' }, { value: 'deal', label: 'Dealt, place your armies' }, { value: 'draft', label: 'Draft territories in turn' }] }));
+    root.querySelector('#opt-fortify').appendChild(picker({ label: 'Fortifying', value: opts.fortify, onChange: (v) => (opts.fortify = v), options: [{ value: 'adjacent', label: 'To a neighbour' }, { value: 'connected', label: 'Anywhere along your lines' }] }));
     root.querySelector('#start').onclick = () => onStart({
       ...opts,
       players: rows.map((r, i) => ({ name: r.name.trim() || `Player ${i + 1}`, color: COLORS[r.color].hex, isAI: r.type !== 'human', level: r.type === 'human' ? 'normal' : r.type })),
