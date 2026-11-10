@@ -258,6 +258,7 @@ export class UI {
       <ul><li>Pick one of your territories with at least 2 armies, then a neighbouring enemy. Dotted lines mark sea routes.</li>
       <li>The attacker rolls up to 3 dice, the defender up to 2. Highest dice are compared, then second highest; the lower die loses an army and ties go to the defender.</li>
       <li>Blitz keeps rolling until the territory falls or you run out of troops. Conquer at least one territory in a turn to earn a card. Eliminate a player to take theirs.</li></ul>
+      <p>Double-click an enemy territory to blitz and automatically move all surviving armies in, leaving one behind. If you have not picked an attacker, your strongest neighbouring territory attacks.</p>
       <h3>Fortify</h3>
       <ul><li>Make one troop movement between your territories, then your turn ends.</li></ul>
       <h3>Controls</h3>

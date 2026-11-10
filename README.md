@@ -11,6 +11,8 @@ A 3D tabletop strategy game of world conquest for the browser, in the tradition 
 
 Controls: drag to pan, scroll/pinch to zoom, right-drag (two fingers) to tilt and rotate. `Enter` confirms, `Esc` cancels, `C` opens your cards, `H` recentres the camera, `Shift`-click places 5 armies.
 
+Double-click an enemy territory to blitz until the battle is decided and move all surviving armies into the conquered territory, leaving one behind. Select an attacker first, or let the game choose your strongest neighbouring territory.
+
 The game autosaves at the start of every turn and can be resumed from the menu.
 
 ## Develop
