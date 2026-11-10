@@ -86,7 +86,7 @@ export class Armies {
     ctx.lineWidth = 10; ctx.strokeStyle = color; ctx.stroke();
     ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.beginPath(); ctx.arc(64, 64, 61, 0, 7); ctx.stroke();
     ctx.fillStyle = '#fff8e6'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.font = `700 ${n > 99 ? 50 : n > 9 ? 62 : 72}px "Alegreya Sans", system-ui, sans-serif`;
+    ctx.font = `800 ${n > 99 ? 50 : n > 9 ? 62 : 72}px "Bricolage Grotesque", system-ui, sans-serif`;
     ctx.fillText(String(n), 64, 69);
     tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
     this.texCache.set(key, tex);
