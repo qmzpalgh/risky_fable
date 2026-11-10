@@ -126,7 +126,7 @@ export class UI {
   // ---------- HUD ----------
   renderTools(items) {
     const el = $('tools'); el.innerHTML = '';
-    for (const it of items) { const b = h(`<button class="btn ${it.off ? 'off' : ''}" title="${esc(it.title || '')}">${ICON[it.icon] || ''}<span>${esc(it.label)}</span></button>`); b.onclick = it.onClick; el.appendChild(b); }
+    for (const it of items) { const b = h(`<button class="btn ${it.off ? 'off' : ''}" aria-label="${esc(it.label)}">${ICON[it.icon] || ''}<span>${esc(it.label)}</span></button>`); b.onclick = it.onClick; el.appendChild(b); }
   }
   renderPlayers(s) {
     // numbers that changed since the last render bump, and the pawn hops when the turn passes

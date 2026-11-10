@@ -76,12 +76,19 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .steps li.done b { background: var(--teal); color: var(--paper); }
 .steps li.solo { padding: 3px 14px; }
 
-#tools { bottom: 18px; right: 14px; display: flex; flex-direction: column; align-items: flex-end; gap: 9px; }
-#tools .btn { display: flex; align-items: center; gap: 7px; padding: 5px 12px 5px 9px; font-size: 14.5px; border-radius: 11px; box-shadow: 0 3px 0 var(--ink), 0 8px 14px rgba(12, 14, 30, 0.3); background: var(--stock); }
-#tools .btn:hover { background: var(--paper); }
-#tools .btn:active { box-shadow: none; transform: translateY(3px); }
+/* one strip of icon keys; the name slides out beside a key on hover or focus */
+#tools { bottom: 18px; right: 14px; display: flex; flex-direction: column; background: var(--stock); border: 2.5px solid var(--ink); border-radius: 14px; box-shadow: 0 4px 0 var(--ink), 0 12px 20px rgba(12, 14, 30, 0.32); }
+#tools .btn { position: relative; display: grid; place-items: center; width: 40px; height: 38px; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; transform: none; }
+#tools .btn + .btn { border-top: 2px solid var(--ink); }
+#tools .btn:first-child { border-radius: 11px 11px 0 0; }
+#tools .btn:last-child { border-radius: 0 0 11px 11px; }
+#tools .btn:hover { background: var(--mustard); }
+#tools .btn:active { background: var(--ink); color: var(--mustard); }
 #tools .btn.off { color: var(--ink-soft); background: var(--stock-deep); }
-#tools svg { width: 17px; height: 17px; flex: none; }
+#tools .btn:focus-visible { outline-offset: -4px; }
+#tools svg { width: 19px; height: 19px; }
+#tools .btn span { position: absolute; right: calc(100% + 10px); top: 50%; padding: 3px 9px; border-radius: 8px; background: var(--ink); color: var(--stock); font-size: 13.5px; font-weight: 700; pointer-events: none; opacity: 0; transform: translate(6px, -50%); transition: opacity 0.12s, transform 0.12s; }
+#tools .btn:hover span, #tools .btn:focus-visible span { opacity: 1; transform: translate(0, -50%); }
 
 #side { top: 14px; right: 14px; width: 232px; display: flex; flex-direction: column; gap: 14px; max-height: calc(100vh - 300px); }
 #continents { padding: 9px 12px; }
@@ -265,9 +272,8 @@ kbd { background: var(--paper); border: 2px solid var(--ink); border-bottom-widt
   .player.current { transform: translateX(8px); }
   .player .pname { display: none; }
   .pstats { font-size: 13px; gap: 7px; }
-  #tools { top: 66px; right: 8px; bottom: auto; gap: 7px; }
-  #tools .btn { padding: 6px; border-radius: 10px; }
-  #tools .btn span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  #tools { top: 66px; right: 8px; bottom: auto; border-radius: 12px; }
+  #tools .btn { width: 36px; height: 34px; }
   #action { flex-direction: column; gap: 10px; bottom: 12px; width: calc(100vw - 16px); padding: 10px 12px 13px; text-align: center; }
   #action .controls { justify-content: center; flex-wrap: wrap; }
   .odds { justify-content: center; flex-wrap: wrap; white-space: normal; }

@@ -11,7 +11,7 @@ import { Sound } from './audio.js';
 import { UI } from './ui.js';
 
 const SAVE_KEY = 'risky-fable-save-v1';
-const SPEEDS = [{ label: 'Normal', k: 1 }, { label: 'Fast', k: 1.9 }, { label: 'Fastest', k: 3.6 }];
+const SPEEDS = [{ label: 'Normal speed', k: 1 }, { label: 'Fast speed', k: 1.9 }, { label: 'Fastest speed', k: 3.6 }];
 const tn = (t) => TERRITORIES[t].name;
 const does = (p, they, you) => (p.name === 'You' ? `You ${you}` : `${p.name} ${they}`);
 const plural = (n, w) => `${n} ${n === 1 ? w : w === 'army' ? 'armies' : w + 's'}`;
