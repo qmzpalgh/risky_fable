@@ -11,8 +11,9 @@ import { Sound } from './audio.js';
 import { UI } from './ui.js';
 
 const SAVE_KEY = 'risky-fable-save-v1';
-const SPEEDS = [{ label: 'Speed: normal', k: 1 }, { label: 'Speed: fast', k: 1.9 }, { label: 'Speed: fastest', k: 3.6 }];
+const SPEEDS = [{ label: 'Normal', k: 1 }, { label: 'Fast', k: 1.9 }, { label: 'Fastest', k: 3.6 }];
 const tn = (t) => TERRITORIES[t].name;
+const does = (p, they, you) => (p.name === 'You' ? `You ${you}` : `${p.name} ${they}`);
 const plural = (n, w) => `${n} ${n === 1 ? w : w === 'army' ? 'armies' : w + 's'}`;
 
 class Game {
@@ -62,11 +63,11 @@ class Game {
 
   renderTools() {
     this.ui.renderTools([
-      { label: 'Cards', title: 'View your cards (C)', onClick: () => this.openCards() },
-      { label: SPEEDS[this.speedIdx].label, title: 'Animation and AI speed', onClick: () => { this.speedIdx = (this.speedIdx + 1) % SPEEDS.length; clock.speed = SPEEDS[this.speedIdx].k; this.renderTools(); } },
-      { label: this.sound.enabled ? 'Sound: on' : 'Sound: off', onClick: () => { this.sound.enabled = !this.sound.enabled; this.renderTools(); } },
-      { label: 'Rules', title: 'How to play', onClick: () => this.ui.showHelp() },
-      { label: 'Quit', title: 'Back to the main menu (your game is saved)', onClick: () => this.ui.confirm('Leave the table?', 'The game is saved at the start of each turn, so you can resume it from the menu.', 'Quit to menu', () => location.reload()) },
+      { icon: 'cards', label: 'Cards', title: 'View your cards (C)', onClick: () => this.openCards() },
+      { icon: `speed${this.speedIdx}`, label: SPEEDS[this.speedIdx].label, title: 'Change animation and AI speed', onClick: () => { this.speedIdx = (this.speedIdx + 1) % SPEEDS.length; clock.speed = SPEEDS[this.speedIdx].k; this.renderTools(); } },
+      { icon: this.sound.enabled ? 'soundOn' : 'soundOff', label: this.sound.enabled ? 'Sound on' : 'Sound off', off: !this.sound.enabled, title: 'Turn sound on or off', onClick: () => { this.sound.enabled = !this.sound.enabled; this.renderTools(); } },
+      { icon: 'rules', label: 'Rules', title: 'How to play', onClick: () => this.ui.showHelp() },
+      { icon: 'quit', label: 'Quit', title: 'Back to the main menu (your game is saved)', onClick: () => this.ui.confirm('Leave the table?', 'The game is saved at the start of each turn, so you can resume it from the menu.', 'Quit to menu', () => location.reload()) },
     ]);
   }
 
@@ -106,14 +107,14 @@ class Game {
 
   updateAction() {
     const s = this.s, ui = this.ui, me = this.me;
-    if (s.phase === 'over') return ui.setAction({ msg: `<strong>${me.name}</strong> rules the world.`, controls: [{ label: 'Play again', kind: 'primary', primary: true, onClick: () => location.reload() }] });
-    if (!this.humanTurn) return ui.setAction({ msg: `<strong style="color:${me.color}">${me.name}</strong> is ${s.phase === 'draft' ? 'claiming land' : s.phase === 'deploy' ? 'placing armies' : s.phase === 'reinforce' ? 'mustering armies' : s.phase === 'attack' ? 'on the attack' : 'repositioning'}`, thinking: true });
+    if (s.phase === 'over') return ui.setAction({ msg: `<strong>${does(me, 'rules', 'rule')} the world.</strong>`, controls: [{ label: 'Play again', kind: 'primary', primary: true, onClick: () => location.reload() }] });
+    if (!this.humanTurn) return ui.setAction({ msg: `${ui.name(me)} is ${s.phase === 'draft' ? 'claiming land' : s.phase === 'deploy' ? 'placing armies' : s.phase === 'reinforce' ? 'mustering armies' : s.phase === 'attack' ? 'on the attack' : 'repositioning'}`, thinking: true });
     if (this.busy) return;
     const { from, to } = this.sel;
     const cardsBtn = { label: `Cards (${me.cards.length})`, onClick: () => this.openCards() };
     if (s.phase === 'draft') return ui.setAction({ msg: 'Claim an unclaimed territory', sub: `${s.owner.filter((o) => o < 0).length} still open` });
     if (s.phase === 'deploy') return ui.setAction({
-      msg: `Place an army on one of your territories`, sub: `${plural(s.reserve[s.turn], 'army')} left in your reserve — hold Shift to place 5`,
+      msg: `Place an army on one of your territories`, sub: `${plural(s.reserve[s.turn], 'army')} left in your reserve. Hold Shift to place 5`,
       controls: [{ label: 'Place the rest for me', onClick: () => this.autoDeploy() }],
     });
     if (this.placing) {
@@ -133,18 +134,18 @@ class Game {
         const p = s.pending;
         this.moveN = Math.max(p.min, Math.min(this.moveN, p.max));
         return ui.setAction({
-          msg: `<strong>${tn(p.to)}</strong> is yours`, sub: `Move in at least ${p.min} — ${tn(p.from)} keeps the rest`,
+          msg: `<strong>${tn(p.to)}</strong> is yours`, sub: `Move in at least ${p.min}. ${tn(p.from)} keeps the rest`,
           controls: [{ type: 'slider', min: p.min, max: p.max, value: this.moveN, onChange: (v) => (this.moveN = v) }, { label: 'Move in', kind: 'primary', primary: true, onClick: () => this.doOccupy(this.moveN) }],
         });
       }
       const done = { label: 'Done attacking', onClick: () => this.endAttack() };
       if (from < 0) return ui.setAction({ msg: 'Choose a territory to attack from', sub: s.conquered ? 'You have earned a card this turn' : 'Conquer a territory this turn to earn a card', controls: [...(me.cards.length ? [cardsBtn] : []), { ...done, kind: 'primary', primary: true }] });
-      if (to < 0) return ui.setAction({ msg: `<strong>${tn(from)}</strong> — choose a neighbouring enemy`, sub: `${plural(s.armies[from] - 1, 'army')} can attack — double-click an enemy to blitz and move all in`, controls: [{ label: 'Cancel', kind: 'ghost', onClick: () => this.cancel() }, done] });
+      if (to < 0) return ui.setAction({ msg: `Attacking from <strong>${tn(from)}</strong>. Choose a neighbouring enemy`, sub: `${plural(s.armies[from] - 1, 'army')} can attack. Double-click an enemy to blitz and move all in`, controls: [{ label: 'Cancel', kind: 'ghost', onClick: () => this.cancel() }, done] });
       const max = Math.min(3, s.armies[from] - 1);
       this.diceN = Math.max(1, Math.min(this.diceN, max));
       const odds = Math.max(1, Math.min(99, Math.round(AI.winChance(s.armies[from] - 1, s.armies[to]) * 100)));
       return ui.setAction({
-        msg: `<strong>${tn(from)}</strong> (${s.armies[from]}) attacks <strong>${tn(to)}</strong> (${s.armies[to]})`, sub: `About ${odds}% chance to take it if you fight to the end`,
+        msg: `<strong>${tn(from)}</strong> (${s.armies[from]}) attacks <strong>${tn(to)}</strong> (${s.armies[to]})`, odds,
         controls: [
           { type: 'seg', title: 'Dice to roll', value: this.diceN, options: [1, 2, 3].map((v) => ({ label: `${v} ${v === 1 ? 'die' : 'dice'}`, value: v, disabled: v > max })), onChange: (v) => { this.diceN = v; this.updateAction(); } },
           { label: 'Roll', kind: 'danger', primary: true, onClick: () => this.humanRoll(false) },
@@ -157,7 +158,7 @@ class Game {
       const end = { label: 'End turn', onClick: () => this.endTurn() };
       const rule = s.options.fortify === 'adjacent' ? 'a neighbouring territory' : 'any connected territory';
       if (from < 0) return ui.setAction({ msg: 'Move armies once, or end your turn', sub: `Pick a territory, then ${rule} of yours`, controls: [{ ...end, kind: 'primary', primary: true }] });
-      if (to < 0) return ui.setAction({ msg: `<strong>${tn(from)}</strong> — choose where to send armies`, sub: `Up to ${s.armies[from] - 1} can move`, controls: [{ label: 'Cancel', kind: 'ghost', onClick: () => this.cancel() }, end] });
+      if (to < 0) return ui.setAction({ msg: `Moving from <strong>${tn(from)}</strong>. Choose where to send armies`, sub: `Up to ${s.armies[from] - 1} can move`, controls: [{ label: 'Cancel', kind: 'ghost', onClick: () => this.cancel() }, end] });
       const max = s.armies[from] - 1;
       this.moveN = Math.max(1, Math.min(this.moveN, max));
       return ui.setAction({
@@ -191,6 +192,8 @@ class Game {
       else if ('123'.includes(e.key) && this.sel.to >= 0 && this.s.phase === 'attack') { this.diceN = +e.key; this.updateAction(); }
     });
     window.addEventListener('resize', () => this.dice.resize());
+    // every cardboard button gives a little click
+    document.addEventListener('click', (e) => { if (e.target.closest('.btn, .seg button, .card, .swatch')) this.sound.click(); });
   }
 
   cancel() {
@@ -300,7 +303,7 @@ class Game {
     this.ui.renderPlayers(s); this.ui.renderContinents(s);
     if (res.eliminated >= 0) {
       this.sound.eliminated();
-      this.ui.banner(`${def.name} is defeated`, res.cardsTaken ? `${att.name} seizes ${plural(res.cardsTaken, 'card')}` : `${att.name} wipes them from the map`, def.color);
+      this.ui.banner(does(def, 'is defeated', 'are defeated'), res.cardsTaken ? `${does(att, 'seizes', 'seize')} ${plural(res.cardsTaken, 'card')}` : att.name === 'You' ? 'You wipe them from the map' : `${att.name} wipes the map clean`, def.color);
       this.ui.log(`${this.ui.name(def)} has been eliminated by ${this.ui.name(att)}.`, 'turn');
       await wait(1.2, true);
     }
@@ -395,7 +398,7 @@ class Game {
     if (s.phase !== 'reinforce' || key === this.turnKey) return false;
     this.turnKey = key;
     this.save();
-    this.ui.log(`Round ${s.round} — ${this.ui.name(me)}`, 'turn');
+    this.ui.log(`Round ${s.round}: ${this.ui.name(me)}`, 'turn');
     return true;
   }
 
@@ -404,7 +407,7 @@ class Game {
     if (this.announceTurn()) {
       const r = E.reinforcements(s, s.turn);
       const humans = s.players.filter((p) => !p.isAI).length;
-      this.ui.banner(humans > 1 ? `${me.name}, your turn` : 'Your turn', `${plural(r.total, 'army')} to place${r.bonus ? ` — including ${r.bonus} for ${r.continents.map((c) => CONTINENTS[c].name).join(' and ')}` : ''}`, me.color);
+      this.ui.banner(humans > 1 ? `${me.name}, your turn` : 'Your turn', `${plural(r.total, 'army')} to place${r.bonus ? `, including ${r.bonus} for ${r.continents.map((c) => CONTINENTS[c].name).join(' and ')}` : ''}`, me.color);
       this.sound.turn();
       this.placeAmount = 1;
       if (s.players.some((p) => p.isAI)) this.world.flyHome(0.9); // AI battles may have left the camera far away
@@ -498,14 +501,14 @@ class Game {
     this.world.flyHome(1.6);
     this.sound.victory();
     this.fx.fireworks(this.world.controls.target.clone(), [w.color, '#ffe9a8', '#ffffff']);
-    this.ui.banner(`${w.name} conquers the world`, '', w.color);
+    this.ui.banner(`${does(w, 'conquers', 'conquer')} the world`, '', w.color);
     this.ui.log(`${this.ui.name(w)} conquers the world.`, 'turn');
     setTimeout(() => this.ui.showVictory(s, () => location.reload()), 2300);
   }
 }
 
 async function boot() {
-  const fonts = Promise.all([document.fonts.load('58px Marcellus'), document.fonts.load('700 62px "Alegreya Sans"')]).catch(() => {});
+  const fonts = Promise.all([document.fonts.load('58px Marcellus'), document.fonts.load('800 62px "Bricolage Grotesque"'), document.fonts.load('40px "Rammetto One"')]).catch(() => {});
   await Promise.race([fonts, new Promise((r) => setTimeout(r, 2500))]);
   try {
     new Game();

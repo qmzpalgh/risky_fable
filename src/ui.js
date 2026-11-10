@@ -13,22 +13,36 @@ export const COLORS = [
 ];
 const AI_NAMES = ['Marshal Vane', 'Admiral Okoro', 'General Lindqvist', 'Countess Arai', 'Baron Castellanos', 'Commander Temür'];
 
+// A pawn in the player's colour stands in for them everywhere in the interface.
+export const pawn = (color) => `<svg class="pawn" viewBox="0 0 16 20" aria-hidden="true"><path fill="${color}" d="M8 1.2a3.700 3.700 0 0 1 2.300 6.600c2.600 1.300 3.900 4.700 4.200 9.200a1.800 1.800 0 0 1-1.800 1.900H3.300A1.800 1.800 0 0 1 1.500 17c.3-4.500 1.600-7.900 4.200-9.200A3.700 3.700 0 0 1 8 1.200z"/></svg>`;
+// Dark ink on light colours, paper on dark ones.
+const inkOn = (hex) => { const n = parseInt(hex.slice(1), 16), l = ((n >> 16) * 299 + ((n >> 8) & 255) * 587 + (n & 255) * 114) / 1000; return l > 150 ? '#1c2444' : '#fffbf0'; };
+const ODDS = [[85, 'Easy pickings', '#178a84'], [65, 'Good odds', '#6fb84a'], [45, 'Coin flip', '#f4b82e'], [25, 'Risky', '#f08a3c'], [0, 'Long shot', '#e2452f']];
+
 const ICON = {
+  cards: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="9" height="12" rx="2" transform="rotate(-10 7.500 11)"/><rect x="8.500" y="3.500" width="9" height="12" rx="2" transform="rotate(8 13 9.500)" fill="#fffbf0"/></svg>',
+  speed0: '<svg viewBox="0 0 20 20" fill="currentColor"><path d="M7 4.500v11l8.500-5.500z"/></svg>',
+  speed1: '<svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4.500v11l7.500-5.500zM10.500 4.500v11L18 10z"/></svg>',
+  speed2: '<svg viewBox="0 0 20 20" fill="currentColor"><path d="M1 5v10l5.500-5zM7 5v10l5.500-5zM13 5v10l5.500-5z"/></svg>',
+  soundOn: '<svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 7.500h3l4.500-4v13l-4.500-4H3z"/><path d="M13 6.500a5 5 0 0 1 0 7M15.500 4a8.500 8.500 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  soundOff: '<svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 7.500h3l4.500-4v13l-4.500-4H3z"/><path d="m13.500 7.500 5 5m0-5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  rules: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M10 5.500C8 4 5.500 3.700 3 4v11.500c2.500-.3 5 0 7 1.500 2-1.500 4.500-1.800 7-1.500V4c-2.500-.3-5 0-7 1.500zM10 5.500V17"/></svg>',
+  quit: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M8 3H4v14h4M9 10h8m-3.500-3.500L17 10l-3.500 3.500"/></svg>',
   land: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1 2 4v5c0 3 2.6 5 6 6 3.4-1 6-3 6-6V4z"/></svg>',
   army: '<svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="4" r="2.6"/><path d="M4.5 14c0-4 1-6.5 3.5-6.5s3.5 2.500 3.500 6.5z"/></svg>',
   card: '<svg viewBox="0 0 16 16" fill="currentColor"><rect x="3.500" y="1.500" width="9" height="13" rx="1.500"/></svg>',
 };
 const CARD_ART = [
-  '<svg viewBox="0 0 48 48" fill="#3a2e1a"><circle cx="24" cy="10" r="6"/><path d="M14 44c0-14 3-22 10-22s10 8 10 22z"/><rect x="35" y="8" width="2.500" height="34" rx="1"/></svg>',
-  '<svg viewBox="0 0 48 48" fill="#3a2e1a"><path d="M10 44h28l-3-9-7-9 2-9 12 2 3-6-7-8-9-3-2-5-5 6-8 8-4 13 2 10z"/></svg>',
-  '<svg viewBox="0 0 48 48" fill="#3a2e1a"><path d="M6 22 38 8l4 7L12 31z"/><circle cx="18" cy="34" r="9" fill="none" stroke="#3a2e1a" stroke-width="3.500"/><circle cx="18" cy="34" r="2.500"/><path d="M4 42h40v3H4z"/></svg>',
-  '<svg viewBox="0 0 48 48" fill="#3a2e1a"><path d="m24 3 6 14 15 1.500-11.500 10L37 44 24 36l-13 8 3.500-15.500L3 18.500 18 17z"/></svg>',
+  '<svg viewBox="0 0 48 48" fill="currentColor"><circle cx="24" cy="10" r="6"/><path d="M14 44c0-14 3-22 10-22s10 8 10 22z"/><rect x="35" y="8" width="2.500" height="34" rx="1"/></svg>',
+  '<svg viewBox="0 0 48 48" fill="currentColor"><path d="M10 44h28l-3-9-7-9 2-9 12 2 3-6-7-8-9-3-2-5-5 6-8 8-4 13 2 10z"/></svg>',
+  '<svg viewBox="0 0 48 48" fill="currentColor"><path d="M6 22 38 8l4 7L12 31z"/><circle cx="18" cy="34" r="9" fill="none" stroke="currentColor" stroke-width="3.500"/><circle cx="18" cy="34" r="2.500"/><path d="M4 42h40v3H4z"/></svg>',
+  '<svg viewBox="0 0 48 48" fill="currentColor"><path d="m24 3 6 14 15 1.500-11.500 10L37 44 24 36l-13 8 3.500-15.500L3 18.500 18 17z"/></svg>',
 ];
 
 export class UI {
   constructor() {
     this.logEl = $('log');
-    for (const id of ['players', 'phase', 'tools', 'continents', 'log', 'action', 'tooltip']) $(id).classList.add('plate');
+    for (const id of ['players', 'phase', 'continents', 'log', 'action', 'tooltip']) $(id).classList.add('plate');
     document.querySelector('#loading')?.classList.add('ready');
   }
 
@@ -42,7 +56,7 @@ export class UI {
     root.hidden = false;
     root.innerHTML = `
       <div class="title-block">
-        <h1>Risky <span>Fable</span></h1>
+        <h1 aria-label="Risky Fable">${['Risky', 'Fable'].map((w, wi) => `<span class="word" aria-hidden="true">${[...w].map((c, i) => `<i style="--r:${[-5, 3, -2, 4, -3][(i + wi * 2) % 5]}deg;--d:${(wi * 5 + i) * 0.07}s">${c}</i>`).join('')}</span>`).join('')}</h1>
         <p>Forty-two territories, six continents, one table. Muster your armies, roll the dice, and take the world before your rivals do.</p>
       </div>
       <div class="setup plate">
@@ -52,9 +66,9 @@ export class UI {
         <h3>House rules</h3>
         <label class="opt"><span>Opening<small>How territories are handed out</small></span>
           <select id="opt-setup">
-            <option value="quick">Quick start — dealt and garrisoned</option>
-            <option value="deal">Dealt — place your own armies</option>
-            <option value="draft">Draft — claim territories in turn</option>
+            <option value="quick">Quick start, ready to fight</option>
+            <option value="deal">Dealt, you place your armies</option>
+            <option value="draft">Draft, claim territories in turn</option>
           </select></label>
         <label class="opt"><span>Fortifying<small>The one troop move that ends a turn</small></span>
           <select id="opt-fortify">
@@ -72,11 +86,11 @@ export class UI {
     const render = () => {
       list.innerHTML = '';
       rows.forEach((r, i) => {
-        const row = h(`<div class="prow" style="margin-bottom:8px">
-          <button class="swatch" title="Change colour" aria-label="Colour: ${COLORS[r.color].name}" style="background:${COLORS[r.color].hex}"></button>
+        const row = h(`<div class="prow">
+          <button class="swatch" title="Change colour" aria-label="Colour: ${COLORS[r.color].name}" >${pawn(COLORS[r.color].hex)}</button>
           <input value="${esc(r.name)}" maxlength="18" aria-label="Player name" />
           <select aria-label="Player type">
-            <option value="human">Human</option><option value="easy">AI — cautious</option><option value="normal">AI — seasoned</option><option value="hard">AI — ruthless</option>
+            <option value="human">Human</option><option value="easy">Cautious AI</option><option value="normal">Seasoned AI</option><option value="hard">Ruthless AI</option>
           </select>
           <button class="rm" title="Remove player" aria-label="Remove player" ${rows.length <= 2 ? 'disabled style="visibility:hidden"' : ''}>×</button></div>`);
         const [sw, name, type, rm] = row.children;
@@ -112,29 +126,34 @@ export class UI {
   // ---------- HUD ----------
   renderTools(items) {
     const el = $('tools'); el.innerHTML = '';
-    for (const it of items) { const b = h(`<button class="btn ghost" title="${esc(it.title || '')}">${esc(it.label)}</button>`); b.onclick = it.onClick; el.appendChild(b); }
+    for (const it of items) { const b = h(`<button class="btn ${it.off ? 'off' : ''}" title="${esc(it.title || '')}">${ICON[it.icon] || ''}<span>${esc(it.label)}</span></button>`); b.onclick = it.onClick; el.appendChild(b); }
   }
-  renderPlayers(s, viewer) {
+  renderPlayers(s) {
+    // numbers that changed since the last render bump, and the pawn hops when the turn passes
+    const prev = this._stats || [], turned = this._turn !== s.turn;
+    const stats = s.players.map((p, i) => [territoriesOf(s, i).length, armiesOf(s, i) + (s.phase === 'draft' || s.phase === 'deploy' ? s.reserve[i] : 0), p.cards.length]);
+    const num = (i, k) => `<b class="${prev[i] && prev[i][k] !== stats[i][k] ? 'bump' : ''}">${stats[i][k]}</b>`;
     $('players').innerHTML = s.players.map((p, i) => `
-      <div class="player ${i === s.turn && s.phase !== 'over' ? 'current' : ''} ${p.alive ? '' : 'out'}">
-        <span class="chip" style="background:${p.color}"></span>
+      <div class="player ${i === s.turn && s.phase !== 'over' ? `current ${turned ? 'hop' : ''}` : ''} ${p.alive ? '' : 'out'}">
+        ${pawn(p.color)}
         <span class="pname">${esc(p.name)}${p.isAI ? '<small>AI</small>' : ''}</span>
-        <span class="pstats"><span title="Territories">${ICON.land}<b>${territoriesOf(s, i).length}</b></span><span title="Armies">${ICON.army}<b>${armiesOf(s, i) + (s.phase === 'draft' || s.phase === 'deploy' ? s.reserve[i] : 0)}</b></span><span title="Cards">${ICON.card}<b>${p.cards.length}</b></span></span>
+        <span class="pstats"><span title="Territories">${ICON.land}${num(i, 0)}</span><span title="Armies">${ICON.army}${num(i, 1)}</span><span title="Cards">${ICON.card}${num(i, 2)}</span></span>
       </div>`).join('');
+    this._stats = stats; this._turn = s.turn;
   }
   renderPhase(s) {
     const p = s.players[s.turn];
     const setup = s.phase === 'draft' || s.phase === 'deploy';
     const order = ['reinforce', 'attack', 'fortify'], names = ['Reinforce', 'Attack', 'Fortify'];
     const at = order.indexOf(s.phase);
-    $('phase').innerHTML = `<div class="who"><span class="chip" style="background:${p.color}"></span>${esc(p.name)}${setup ? '' : `<span style="color:var(--muted);font:500 15px var(--ui)">round ${s.round}</span>`}</div>
-      <div class="steps">${setup ? `<span class="on">${s.phase === 'draft' ? 'Claiming territories' : 'Placing opening armies'}</span>` : names.map((n, i) => `<span class="${i === at ? 'on' : i < at ? 'done' : ''}">${n}</span>`).join('<i></i>')}</div>`;
+    $('phase').innerHTML = `<div class="who">${pawn(p.color)}<span class="nm">${esc(p.name)}</span>${setup ? '' : `<span class="round">Round ${s.round}</span>`}</div>
+      <ol class="steps">${setup ? `<li class="on solo">${s.phase === 'draft' ? 'Claiming territories' : 'Placing opening armies'}</li>` : names.map((n, i) => `<li class="${i === at ? 'on' : i < at ? 'done' : ''}" ${i === at ? 'aria-current="step"' : ''}><b>${i < at ? '✓' : i + 1}</b><span>${n}</span></li>`).join('')}</ol>`;
   }
   renderContinents(s) {
     $('continents').innerHTML = CONTINENTS.map((c, ci) => {
       const o = s.owner[CONT_MEMBERS[ci][0]];
       const held = o >= 0 && CONT_MEMBERS[ci].every((t) => s.owner[t] === o);
-      return `<div class="cont"><span class="sw" style="background:${c.color}"></span><span>${c.name}${held ? `<span class="holder"><span class="chip" style="background:${s.players[o].color}"></span>${esc(s.players[o].name)}</span>` : ''}</span><b>+${c.bonus}</b></div>`;
+      return `<div class="cont ${held ? 'held' : ''}"><span class="sw" style="background:${c.color}"></span><span>${c.name}${held ? `<span class="holder">${pawn(s.players[o].color)}${esc(s.players[o].name)}</span>` : ''}</span><b title="Armies each turn for holding all of ${c.name}">+${c.bonus}</b></div>`;
     }).join('');
   }
   log(html, cls = '') {
@@ -144,7 +163,7 @@ export class UI {
     this.logEl.scrollTop = this.logEl.scrollHeight;
   }
   clearLog() { this.logEl.innerHTML = ''; }
-  name(p) { return `<em style="color:${p.color}">${esc(p.name)}</em>`; }
+  name(p) { return `<span class="who-tag">${pawn(p.color)}${esc(p.name)}</span>`; }
 
   // Action bar. spec: { msg, sub, thinking, controls: [ {type:'button'|'seg'|'slider', ...} ] }
   setAction(spec) {
@@ -152,7 +171,7 @@ export class UI {
     const key = JSON.stringify(spec, (k, v) => (typeof v === 'function' ? undefined : v));
     if (key === this._actionKey) return;
     this._actionKey = key;
-    el.innerHTML = `<div class="msg ${spec.thinking ? 'thinking' : ''}">${spec.msg}${spec.sub ? `<span class="sub">${spec.sub}</span>` : ''}</div><div class="controls"></div>`;
+    el.innerHTML = `<div class="msg ${spec.thinking ? 'thinking' : ''}">${spec.msg}${spec.sub ? `<span class="sub">${spec.sub}</span>` : ''}${spec.odds ? this.oddsMeter(spec.odds) : ''}</div><div class="controls"></div>`;
     const box = el.lastElementChild;
     this.primary = null;
     for (const c of spec.controls || []) {
@@ -177,6 +196,10 @@ export class UI {
       }
     }
   }
+  oddsMeter(pct) {
+    const [, word, color] = ODDS.find(([min]) => pct >= min);
+    return `<span class="odds"><span class="track"><span class="fill" style="width:${pct}%;--c:${color}"></span></span><span><b>${word}.</b> ${pct}% to win if you fight to the end</span></span>`;
+  }
   pressPrimary() { if (this.primary && !document.querySelector('#modal-root .modal')) { this.primary.click(); return true; } return false; }
 
   tooltip(html, e) {
@@ -193,21 +216,22 @@ export class UI {
   }
   territoryTip(s, t) {
     const o = s.owner[t], c = CONTINENTS[CONT_OF[t]];
-    return `<h4>${TERRITORIES[t].name}</h4><div class="row"><span class="sw" style="width:9px;height:9px;border-radius:2px;background:${c.color}"></span>${c.name} · +${c.bonus}</div>` +
-      (o >= 0 ? `<div class="row"><span class="chip" style="background:${s.players[o].color};width:10px;height:10px"></span>${esc(s.players[o].name)} — <b>${s.armies[t]}</b> ${s.armies[t] === 1 ? 'army' : 'armies'}</div>` : '<div class="row">Unclaimed</div>');
+    return `<h4>${TERRITORIES[t].name}</h4><div class="row"><span class="sw" style="background:${c.color}"></span>${c.name}, worth +${c.bonus}</div>` +
+      (o >= 0 ? `<div class="row">${pawn(s.players[o].color)}${esc(s.players[o].name)} holds it with <b>${s.armies[t]}</b></div>` : '<div class="row">Unclaimed</div>');
   }
 
   banner(title, sub = '', color = '') {
     const el = $('banner');
     el.hidden = true; void el.offsetWidth;
-    el.innerHTML = `<h2 style="${color ? `color:${color}` : ''}">${title}</h2>${sub ? `<p>${sub}</p>` : ''}`;
+    el.style.setProperty('--bc', color || '#f4b82e'); el.style.setProperty('--bt', inkOn(color || '#f4b82e'));
+    el.innerHTML = `<h2>${esc(title)}</h2>${sub ? `<p>${esc(sub)}</p>` : ''}`;
     el.hidden = false;
     clearTimeout(this._bt); this._bt = setTimeout(() => (el.hidden = true), 2100);
   }
 
   showTray(on) { $('tray').hidden = !on; if (!on) $('roll-result').innerHTML = ''; }
   rollResult(att, def, res) {
-    $('roll-result').innerHTML = `<div class="side"><span class="chip" style="background:${att.color}"></span>${esc(att.name)} ${res && res.aLoss ? `<span class="lossn">−${res.aLoss}</span>` : ''}</div><div class="side">${res && res.dLoss ? `<span class="lossn">−${res.dLoss}</span>` : ''} ${esc(def.name)}<span class="chip" style="background:${def.color}"></span></div>`;
+    $('roll-result').innerHTML = `<div class="side">${pawn(att.color)}<span class="nm">${esc(att.name)}</span>${res && res.aLoss ? `<span class="lossn">−${res.aLoss}</span>` : ''}</div><div class="side">${res && res.dLoss ? `<span class="lossn">−${res.dLoss}</span>` : ''}<span class="nm">${esc(def.name)}</span>${pawn(def.color)}</div>`;
   }
 
   // ---------- modals ----------
@@ -225,20 +249,20 @@ export class UI {
     const p = s.players[s.turn];
     const sel = new Set(findSet(s, s.turn) && (canTrade || must) ? findSet(s, s.turn) : []);
     const value = tradeValue(s.trades);
-    const m = this.modal(`<h2>${esc(p.name)}’s cards</h2>
+    const m = this.modal(`<h2>${p.name === 'You' ? 'Your' : `${esc(p.name)}’s`} cards</h2>
       <p>Trade three of a kind, one of each, or any set with a wild card. The next set is worth <b>${value} armies</b>. A traded card showing a territory you hold adds 2 armies there.</p>
       <div class="hand"></div>
-      <div class="actions"><span id="trade-hint" style="margin-right:auto;color:var(--muted);align-self:center"></span>${must ? '' : '<button class="btn" id="close">Close</button>'}<button class="btn primary" id="trade">Trade for ${value} armies</button></div>`);
+      <div class="actions"><span id="trade-hint"></span>${must ? '' : '<button class="btn" id="close">Close</button>'}<button class="btn primary" id="trade">Trade for ${value} armies</button></div>`);
     const hand = m.querySelector('.hand'), btn = m.querySelector('#trade'), hint = m.querySelector('#trade-hint');
     if (!p.cards.length) hand.innerHTML = '<p>No cards yet. Conquer at least one territory in a turn to earn one.</p>';
     const upd = () => {
-      [...hand.children].forEach((c, i) => c.classList?.toggle('sel', sel.has(i)));
+      [...hand.children].forEach((c, i) => { c.classList?.toggle('sel', sel.has(i)); if (c.matches('.card')) c.setAttribute('aria-pressed', sel.has(i)); });
       const ok = sel.size === 3 && isSet([...sel].map((i) => p.cards[i]));
       btn.disabled = !(ok && (canTrade || must));
       hint.textContent = must ? 'You hold five or more cards and must trade.' : !canTrade ? 'Cards can be traded at the start of your turn.' : sel.size === 3 && !ok ? 'Those three do not make a set.' : '';
     };
     p.cards.forEach((c, i) => {
-      const el = h(`<button class="card"><span class="cname">${c.t >= 0 ? TERRITORIES[c.t].name : 'Wild card'}</span>${CARD_ART[c.type]}<span><span class="ctype">${CARD_NAMES[c.type]}</span>${c.t >= 0 && s.owner[c.t] === s.turn ? '<br><span class="mine">You hold this +2</span>' : ''}</span></button>`);
+      const el = h(`<button class="card t${c.type}" aria-pressed="false"><span class="cname">${c.t >= 0 ? TERRITORIES[c.t].name : 'Wild card'}</span>${CARD_ART[c.type]}<span><span class="ctype">${CARD_NAMES[c.type]}</span>${c.t >= 0 && s.owner[c.t] === s.turn ? '<br><span class="mine">You hold this +2</span>' : ''}</span></button>`);
       el.onclick = () => { sel.has(i) ? sel.delete(i) : sel.size < 3 && sel.add(i); upd(); };
       hand.appendChild(el);
     });
@@ -253,7 +277,7 @@ export class UI {
       <p>Take every territory on the map. Each turn has three steps.</p>
       <h3>Reinforce</h3>
       <ul><li>You receive one army per three territories you hold (never fewer than 3), plus a bonus for every continent you hold completely.</li>
-      <li>Trade sets of three cards for more armies — each set traded in the game is worth more than the last. Holding five cards forces a trade.</li></ul>
+      <li>Trade sets of three cards for more armies. Each set traded in the game is worth more than the last. Holding five cards forces a trade.</li></ul>
       <h3>Attack</h3>
       <ul><li>Pick one of your territories with at least 2 armies, then a neighbouring enemy. Dotted lines mark sea routes.</li>
       <li>The attacker rolls up to 3 dice, the defender up to 2. Highest dice are compared, then second highest; the lower die loses an army and ties go to the defender.</li>
@@ -262,11 +286,21 @@ export class UI {
       <h3>Fortify</h3>
       <ul><li>Make one troop movement between your territories, then your turn ends.</li></ul>
       <h3>Controls</h3>
-      <ul><li>Drag to pan · scroll or pinch to zoom · right-drag (or two fingers) to tilt and rotate.</li>
-      <li><kbd>Enter</kbd> confirms the highlighted action · <kbd>Esc</kbd> or right-click cancels a selection · <kbd>C</kbd> opens your cards · <kbd>H</kbd> recentres the camera.</li>
+      <ul><li>Drag to pan, scroll or pinch to zoom, right-drag (or two fingers) to tilt and rotate.</li>
+      <li><kbd>Enter</kbd> confirms the highlighted action.</li>
+      <li><kbd>Esc</kbd> or right-click cancels a selection.</li>
+      <li><kbd>C</kbd> opens your cards and <kbd>H</kbd> recentres the camera.</li>
       <li>Hold <kbd>Shift</kbd> while placing to drop 5 armies at once.</li></ul>
       <div class="actions"><button class="btn primary" id="close">Back to the table</button></div>`);
     m.querySelector('#close').onclick = () => this.closeModal();
+  }
+
+  confetti(colors) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const box = h('<div id="confetti" aria-hidden="true"></div>'), r = Math.random;
+    for (let k = 0; k < 90; k++) box.appendChild(h(`<i style="left:${r() * 100}%;background:${colors[k % colors.length]};--x:${(r() - 0.5) * 30}vw;--s:${(r() - 0.5) * 1800}deg;--t:${2 + r() * 1.800}s;--d:${r() * 0.9}s"></i>`));
+    document.body.appendChild(box);
+    setTimeout(() => box.remove(), 5000);
   }
 
   confirm(title, text, yes, onYes) {
@@ -277,11 +311,12 @@ export class UI {
 
   showVictory(s, onAgain) {
     const w = s.players[s.winner];
-    const m = this.modal(`<p style="margin:0;color:var(--brass)">The world is won in round ${s.round}</p>
-      <div class="victor"><span class="chip" style="background:${w.color}"></span>${esc(w.name)}</div>
-      <table class="stats"><thead><tr><th>Commander</th><th>Territories taken</th><th>Territories lost</th><th>Armies destroyed</th><th>Armies lost</th><th>Sets traded</th></tr></thead><tbody>
-      ${s.players.map((p) => `<tr><td><span class="chip" style="background:${p.color}"></span>${esc(p.name)}</td><td>${p.stats.conquered}</td><td>${p.stats.lost}</td><td>${p.stats.killed}</td><td>${p.stats.casualties}</td><td>${p.stats.trades}</td></tr>`).join('')}
-      </tbody></table>
+    this.confetti([w.color, '#f4b82e', '#e2452f', '#178a84', '#fffbf0']);
+    const m = this.modal(`<p class="won-in">The world is won in round ${s.round}</p>
+      <div class="victor">${pawn(w.color)}${esc(w.name)}</div>
+      <div class="stats-wrap"><table class="stats"><thead><tr><th>Commander</th><th>Territories taken</th><th>Territories lost</th><th>Armies destroyed</th><th>Armies lost</th><th>Sets traded</th></tr></thead><tbody>
+      ${s.players.map((p) => `<tr class="${p === w ? 'won' : ''}"><td>${pawn(p.color)}${esc(p.name)}</td><td>${p.stats.conquered}</td><td>${p.stats.lost}</td><td>${p.stats.killed}</td><td>${p.stats.casualties}</td><td>${p.stats.trades}</td></tr>`).join('')}
+      </tbody></table></div>
       <div class="actions"><button class="btn" id="look">Admire the map</button><button class="btn primary" id="again">Play again</button></div>`);
     m.querySelector('#again').onclick = () => { this.closeModal(); onAgain(); };
     m.querySelector('#look').onclick = () => this.closeModal();
