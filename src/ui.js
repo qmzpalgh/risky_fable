@@ -66,14 +66,14 @@ export class UI {
         <h3>House rules</h3>
         <label class="opt"><span>Opening<small>How territories are handed out</small></span>
           <select id="opt-setup">
-            <option value="quick">Quick start, ready to fight</option>
-            <option value="deal">Dealt, you place your armies</option>
-            <option value="draft">Draft, claim territories in turn</option>
+            <option value="quick">Quick start</option>
+            <option value="deal">Dealt, place your armies</option>
+            <option value="draft">Draft territories in turn</option>
           </select></label>
         <label class="opt"><span>Fortifying<small>The one troop move that ends a turn</small></span>
           <select id="opt-fortify">
-            <option value="adjacent">To a neighbouring territory</option>
-            <option value="connected">Anywhere along your own lines</option>
+            <option value="adjacent">To a neighbour</option>
+            <option value="connected">Anywhere along your lines</option>
           </select></label>
         <div class="spacer"></div>
         <div class="go">
